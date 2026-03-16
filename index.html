@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Bangladesh Bank Archives | Notice Recovery System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --forest: #0a1f13;
+      --forest-light: #1a3d25;
+      --gold: #c9a227;
+      --gold-dim: #9a7b1a;
+      --paper: #f5f1e8;
+      --paper-dark: #e8e0d0;
+      --error: #c44d34;
+      --success: #2d6a4f;
+      --accent: #4f8ef7;
+
+      --font-serif: 'Crimson Text', Georgia, serif;
+      --font-sans: 'Space Grotesk', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--forest);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 20px 16px 80px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated grain texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.03;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      z-index: 1;
+    }
+
+    /* Watermark pattern */
+    .watermark {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-15deg);
+      font-family: var(--font-serif);
+      font-size: 25vw;
+      font-weight: 600;
+      color: rgba(201, 162, 39, 0.02);
+      pointer-events: none;
+      z-index: 0;
+      white-space: nowrap;
+      user-select: none;
+      max-width: 100vw;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--paper);
+      position: relative;
+      z-index: 2;
+      border-radius: 4px;
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(201, 162, 39, 0.1);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    /* Decorative header band */
+    .header-band {
+      height: 6px;
+      background: linear-gradient(90deg, var(--gold-dim) 0%, var(--gold) 50%, var(--gold-dim) 100%);
+      position: relative;
+    }
+
+    .header-band::after {
+      content: '';
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 10px,
+        rgba(10, 31, 19, 0.1) 10px,
+        rgba(10, 31, 19, 0.1) 12px
+      );
+    }
+
+    .content {
+      padding: 32px 20px 24px;
+    }
+
+    /* Typography hierarchy */
+    .header-section {
+      margin-bottom: 28px;
+      position: relative;
+    }
+
+    .seal {
+      width: 52px;
+      height: 52px;
+      background: var(--forest);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      border: 2px solid var(--gold);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .seal-inner {
+      color: var(--gold);
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -1px;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      font-weight: 600;
+      color: var(--forest);
+      line-height: 1.2;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+      word-wrap: break-word;
+    }
+
+    .subtitle {
+      font-family: var(--font-sans);
+      font-size: clamp(0.85rem, 3vw, 1rem);
+      color: var(--forest-light);
+      line-height: 1.5;
+      font-weight: 400;
+      max-width: 100%;
+      word-wrap: break-word;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+      margin: 24px 0;
+      opacity: 0.4;
+    }
+
+    /* Form styling */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (min-width: 480px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .field-group.full-width {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--forest-light);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .icon {
+      font-size: 0.9rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--paper-dark);
+      border-radius: 0;
+      background: white;
+      font-family: var(--font-sans);
+      font-size: 1rem;
+      color: var(--forest);
+      transition: all 0.2s ease;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+    }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%230a1f13' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 14px;
+      padding-right: 32px;
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: var(--forest-light);
+      opacity: 0.7;
+      font-style: italic;
+      font-family: var(--font-serif);
+      line-height: 1.4;
+    }
+
+    /* Action buttons */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (min-width: 480px) {
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+    }
+
+    button {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      position: relative;
+      overflow: hidden;
+      border-radius: 0;
+    }
+
+    .btn-primary {
+      background: var(--forest);
+      color: var(--gold);
+      border: 2px solid var(--forest);
+      grid-column: 1 / -1;
+    }
+
+    @media (min-width: 480px) {
+      .btn-primary {
+        flex: 1;
+        min-width: 140px;
+        grid-column: auto;
+      }
+    }
+
+    .btn-primary:hover {
+      background: var(--forest-light);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(10, 31, 19, 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--forest);
+      border: 2px solid var(--paper-dark);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold-dim);
+      background: rgba(201, 162, 39, 0.05);
+    }
+
+    /* Result display */
+    .result-section {
+      margin-top: 24px;
+      padding: 16px;
+      background: white;
+      border: 1px solid var(--paper-dark);
+      position: relative;
+    }
+
+    @media (min-width: 480px) {
+      .result-section {
+        padding: 24px;
+      }
+    }
+
+    .result-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gold);
+    }
+
+    .result-label {
+      font-family: var(--font-sans);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold-dim);
+      margin-bottom: 10px;
+    }
+
+    .url-display {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--forest);
+      word-break: break-all;
+      line-height: 1.5;
+      padding: 10px;
+      background: var(--paper);
+      border: 1px dashed var(--paper-dark);
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+    }
+
+    @media (min-width: 480px) {
+      .url-display {
+        font-size: 0.9rem;
+        padding: 12px;
+        min-height: 56px;
+      }
+    }
+
+    /* Messages */
+    .message {
+      margin-top: 12px;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      border-left: 3px solid;
+    }
+
+    .message.show {
+      display: flex;
+    }
+
+    .message.success {
+      background: rgba(45, 106, 79, 0.08);
+      color: var(--success);
+      border-left-color: var(--success);
+    }
+
+    .message.error {
+      background: rgba(196, 77, 52, 0.08);
+      color: var(--error);
+      border-left-color: var(--error);
+    }
+
+    /* Pattern reference */
+    .pattern-card {
+      margin-top: 24px;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(10, 31, 19, 0.03), transparent);
+      border: 1px solid var(--paper-dark);
+    }
+
+    @media (min-width: 480px) {
+      .pattern-card {
+        padding: 20px;
+        margin-top: 32px;
+      }
+    }
+
+    .pattern-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      color: var(--forest);
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+
+    @media (min-width: 480px) {
+      .pattern-title {
+        font-size: 1.1rem;
+      }
+    }
+
+    .pattern-list {
+      list-style: none;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: var(--forest-light);
+      line-height: 1.8;
+      word-wrap: break-word;
+    }
+
+    @media (min-width: 480px) {
+      .pattern-list {
+        font-size: 0.85rem;
+        line-height: 2;
+      }
+    }
+
+    .pattern-list li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 4px;
+    }
+
+    @media (min-width: 480px) {
+      .pattern-list li {
+        padding-left: 20px;
+      }
+    }
+
+    .pattern-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+      font-size: 0.8rem;
+    }
+
+    @media (min-width: 480px) {
+      .pattern-list li::before {
+        font-size: 1rem;
+      }
+    }
+
+    .pattern-list strong {
+      color: var(--forest);
+      font-weight: 600;
+    }
+
+    /* Footer inside container */
+    .footer {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--paper-dark);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--forest-light);
+      font-style: italic;
+      font-family: var(--font-serif);
+      line-height: 1.5;
+    }
+
+    @media (min-width: 480px) {
+      .footer {
+        margin-top: 32px;
+        padding-top: 24px;
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Credit Bar - Sticky Bottom */
+    .credit-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 44px;
+      background: var(--forest);
+      border-top: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--paper);
+      z-index: 200;
+      font-family: var(--font-sans);
+      letter-spacing: 0.3px;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .credit-bar a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 4px;
+      transition: opacity 0.2s;
+    }
+
+    .credit-bar a:hover {
+      opacity: 0.8;
+    }
+
+    /* Visitor Widget */
+    #visitorWidget {
+      position: fixed;
+      bottom: 50px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--paper);
+      border: 1px solid var(--paper-dark);
+      border-radius: 20px;
+      padding: 6px 12px 6px 8px;
+      font-size: 0.7rem;
+      color: var(--forest-light);
+      z-index: 150;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      font-family: var(--font-sans);
+    }
+
+    @media (min-width: 480px) {
+      #visitorWidget {
+        bottom: 56px;
+        right: 16px;
+        padding: 6px 14px 6px 10px;
+        font-size: 0.75rem;
+      }
+    }
+
+    .vc-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    #vcTotal {
+      font-family: 'Space Grotesk', monospace;
+      font-weight: 700;
+      color: var(--forest);
+      font-size: 0.8rem;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    @media (min-width: 480px) {
+      #vcTotal {
+        font-size: 0.85rem;
+        min-width: 24px;
+      }
+    }
+
+    .vc-lbl {
+      color: var(--forest-light);
+      letter-spacing: 0.3px;
+      font-size: 0.65rem;
+    }
+
+    @media (min-width: 480px) {
+      .vc-lbl {
+        font-size: 0.7rem;
+      }
+    }
+
+    /* Loading animation for button */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .processing {
+      background: linear-gradient(90deg, var(--forest) 25%, var(--forest-light) 50%, var(--forest) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="watermark">BB</div>
+
+  <div class="container">
+    <div class="header-band"></div>
+
+    <div class="content">
+      <div class="header-section">
+        <div class="seal">
+          <span class="seal-inner">BB</span>
+        </div>
+        <h1>Official Notice Recovery</h1>
+        <p class="subtitle">
+          Access archived recruitment notices from Bangladesh Bank and Combined Banks. 
+          Enter publication details to retrieve official PDF documents.
+        </p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-grid">
+        <div class="field-group">
+          <label><span class="icon">📅</span> Publication Date</label>
+          <input type="date" id="noticeDate" />
+          <span class="hint">Exact date of notice publication</span>
+        </div>
+
+        <div class="field-group">
+          <label><span class="icon">🏛️</span> Institution Type</label>
+          <select id="noticeType">
+            <option value="">Select Type</option>
+            <option value="bb">BB — Bangladesh Bank</option>
+            <option value="bscs">BSCS — Combined Banks</option>
+          </select>
+          <span class="hint">BB or BSCS classification</span>
+        </div>
+
+        <div class="field-group full-width">
+          <label><span class="icon">#</span> Notice Number</label>
+          <input type="number" id="noticeNo" placeholder="e.g. 78" min="1" />
+          <span class="hint">Sequential notice identifier (numeric only)</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" onclick="generateLink()" id="genBtn">
+          Generate Link
+        </button>
+        <button class="btn-secondary" onclick="openLink()">
+          Open PDF
+        </button>
+        <button class="btn-secondary" onclick="copyLink()">
+          Copy URL
+        </button>
+        <button class="btn-secondary" onclick="resetForm()">
+          Reset
+        </button>
+      </div>
+
+      <div class="result-section">
+        <div class="result-label">Generated Resource Locator</div>
+        <div class="url-display" id="resultUrl">
+          Awaiting input parameters...
+        </div>
+        <div class="message success" id="successMsg"></div>
+        <div class="message error" id="errorMsg"></div>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-title">URL Construction Schema</div>
+        <ul class="pattern-list">
+          <li><strong>BSCS:</strong> https://erecruitment.bb.org.bd/career/YYYYMMDD_bscs_NoticeNo.pdf</li>
+          <li><strong>BB:</strong> https://erecruitment.bb.org.bd/career/YYYYMMDD_bb_NoticeNo.pdf</li>
+          <li><strong>Example:</strong> 20250722_bscs_78.pdf</li>
+        </ul>
+      </div>
+
+      <div class="footer">
+        High-quality PDF retrieval system for Bangladesh Bank recruitment archives
+      </div>
+    </div>
+  </div>
+
+  <!-- Visitor Counter Widget -->
+  <div id="visitorWidget">
+    <span class="vc-dot"></span>
+    <span id="vcTotal">...</span>
+    <span class="vc-lbl">visitors</span>
+  </div>
+
+  <!-- Credit Bar -->
+  <div class="credit-bar">
+    Coding - <a href="https://plabonkumersarker.github.io/profile" target="_blank" rel="noopener">Plabon Kumer Sarker</a>
+  </div>
+
+  <script>
+    let generatedLink = "";
+
+    function showMessage(type, text) {
+      const successMsg = document.getElementById("successMsg");
+      const errorMsg = document.getElementById("errorMsg");
+
+      successMsg.classList.remove("show");
+      errorMsg.classList.remove("show");
+
+      if (type === "success") {
+        successMsg.innerHTML = `<span>✓</span> ${text}`;
+        successMsg.classList.add("show");
+      } else {
+        errorMsg.innerHTML = `<span>⚠</span> ${text}`;
+        errorMsg.classList.add("show");
+      }
+    }
+
+    function clearMessages() {
+      document.getElementById("successMsg").classList.remove("show");
+      document.getElementById("errorMsg").classList.remove("show");
+    }
+
+    function generateLink() {
+      clearMessages();
+
+      const btn = document.getElementById("genBtn");
+      btn.classList.add("processing");
+
+      setTimeout(() => {
+        const dateValue = document.getElementById("noticeDate").value;
+        const typeValue = document.getElementById("noticeType").value;
+        const noticeNo = document.getElementById("noticeNo").value.trim();
+        const resultUrl = document.getElementById("resultUrl");
+
+        if (!dateValue || !typeValue || !noticeNo) {
+          generatedLink = "";
+          resultUrl.textContent = "Awaiting input parameters...";
+          showMessage("error", "All fields required: Date, Type, and Notice Number");
+          btn.classList.remove("processing");
+          return;
+        }
+
+        const formattedDate = dateValue.replaceAll("-", "");
+        generatedLink = `https://erecruitment.bb.org.bd/career/${formattedDate}_${typeValue}_${noticeNo}.pdf`;
+
+        resultUrl.textContent = generatedLink;
+        showMessage("success", "Link generated successfully. Ready to open or copy.");
+        btn.classList.remove("processing");
+      }, 400);
+    }
+
+    function openLink() {
+      if (!generatedLink) {
+        generateLink();
+        return;
+      }
+
+      if (!generatedLink) return;
+
+      window.open(generatedLink, "_blank");
+      showMessage("success", "Opening PDF in new tab...");
+    }
+
+    async function copyLink() {
+      if (!generatedLink) {
+        generateLink();
+        return;
+      }
+
+      if (!generatedLink) return;
+
+      try {
+        await navigator.clipboard.writeText(generatedLink);
+        showMessage("success", "URL copied to clipboard");
+      } catch (err) {
+        showMessage("error", "Copy failed. Please select and copy manually.");
+      }
+    }
+
+    function resetForm() {
+      document.getElementById("noticeDate").value = "";
+      document.getElementById("noticeType").value = "";
+      document.getElementById("noticeNo").value = "";
+      document.getElementById("resultUrl").textContent = "Awaiting input parameters...";
+      generatedLink = "";
+      clearMessages();
+      showMessage("success", "Form reset complete");
+    }
+
+    // Enter key support
+    document.getElementById("noticeNo").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        generateLink();
+      }
+    });
+
+    // Set today's date as max
+    document.getElementById("noticeDate").max = new Date().toISOString().split("T")[0];
+
+    /* ---- VISITOR COUNTER ---- */
+    (function() {
+      var KEY         = 'bb-notice-finder-visitors-v1';
+      var SESSION_KEY = 'bb_notice_vc_v1';
+      var el = document.getElementById('vcTotal');
+      if (!el) return;
+
+      function rollUp(target) {
+        var start = 0, dur = 1200, t0 = performance.now();
+        function tick(now) {
+          var p = Math.min((now - t0) / dur, 1);
+          var e = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(start + (target - start) * e).toLocaleString();
+          if (p < 1) requestAnimationFrame(tick);
+          else el.textContent = target.toLocaleString();
+        }
+        requestAnimationFrame(tick);
+      }
+
+      var counted = sessionStorage.getItem(SESSION_KEY);
+      var endpoint = counted
+        ? 'https://countapi.mileshilliard.com/api/v1/get/' + KEY
+        : 'https://countapi.mileshilliard.com/api/v1/hit/' + KEY;
+
+      fetch(endpoint)
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+          if (!counted) sessionStorage.setItem(SESSION_KEY, '1');
+          rollUp(parseInt(data.value) || 0);
+        })
+        .catch(function(){ el.textContent = '—'; });
+    })();
+  </script>
+</body>
+</html>
